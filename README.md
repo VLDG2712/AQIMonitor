@@ -1,3 +1,6 @@
+<h1> Hexair </h1>
+
+
 # ESP32 Air Quality Monitor
 
 This repository contains the firmware and documentation for a professional-grade DIY Air Quality Monitor based on the ESP32 platform. It tracks crucial environmental metrics and provides a clean, responsive web interface for real-time monitoring.
