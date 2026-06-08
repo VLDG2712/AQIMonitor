@@ -26,7 +26,7 @@ This repository contains the firmware and documentation for a professional-grade
 
 ## Firmware Setup
 
-1.  **Clone the Repository**: `git clone <repository-url>`
+1.  **Clone the Repository**: `git clone https://github.com/VLDG2712/AQIMonitor`
 2.  **Install Dependencies**: Use PlatformIO or Arduino IDE to install the following libraries:
     - TFT_eSPI
     - Adafruit_AHTX0
