@@ -1219,7 +1219,7 @@ void setup() {
   tft.setTextColor(C_HEADER, C_BG);
   tft.setTextSize(2);
   tft.setCursor(10, 40); tft.println("Homelab Air");
-  tft.setCursor(10, 65); tft.println("Monitor v2");
+  tft.setCursor(10, 65); tft.println("Monitor v1");
   tft.setTextSize(1);
 
   tft.setTextColor(C_LABEL, C_BG);
