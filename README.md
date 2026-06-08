@@ -12,7 +12,7 @@ This repository contains the firmware and documentation for a professional-grade
 - **API Support**: Includes REST API endpoints and WebSocket support for live data streaming.
 - **Security**: Basic Auth protected configuration endpoints.
 - **Flutter Companion App**: Designed to pair with the Flutter app at https://github.com/VLDG2712/AQI-Monitor for mobile monitoring and control.
-- **3D Printable Case**: Coming soon! 3D printable almost finished just needs small finish touches.
+- **3D Printable Case**: Coming soon! 3D printable case CAD almost finished just needs small finish touches.
 ## Hardware Requirements
 
 - **Microcontroller**: ESP32 Development Board
