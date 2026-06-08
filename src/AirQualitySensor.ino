@@ -1008,7 +1008,7 @@ void handleAirData() {
   server->send(200, "application/json", buf);
 }
 
-const char* API_TOKEN = "changeme-homelab-2025";
+const char* API_TOKEN = "MySuperSecretToken123!"; // Here generate your own bearer-token for api security!
 
 bool checkAuth() {
   if (!server->hasHeader("Authorization")) {
