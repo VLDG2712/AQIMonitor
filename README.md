@@ -118,9 +118,10 @@ auth. Note that `/air` and `GET /neo` are deliberately unauthenticated —
 `/air` is rate-limited to one request per second; anything that changes state
 requires the token.
 
-There is **no WebSocket server**, despite the `WebSockets` entry in
-`lib_deps`. The companion app attempts `ws://<ip>:9092` first and falls back to
-polling `/air` after a timeout.
+There is **no WebSocket server**. An unused `WebSockets` entry lingered in
+`lib_deps` for a while and the README advertised a stream on port 9092; neither
+was ever backed by code. The companion app polls `/air` instead. If a WebSocket
+server is added here, the app has the client path still in place behind a flag.
 
 ## History service
 
