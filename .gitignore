@@ -5,3 +5,6 @@
 .vscode/ipch
 .vscode/
 src/secrets.h
+server/.env
+__pycache__/
+*.pyc

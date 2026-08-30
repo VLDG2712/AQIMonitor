@@ -1313,7 +1313,9 @@ void readSensors() {
   }
 
   if (sensors.bmpOk) {
-    sensors.pressure_hPa = bmp.readPressure() / 100.0f;
+    // Adafruit_BMP5xx::readPressure() already returns hPa (see its doc comment
+    // in Adafruit_BMP5xx.cpp) — no Pa->hPa conversion needed here.
+    sensors.pressure_hPa = bmp.readPressure();
     sensors.bmp_temp     = bmp.readTemperature();
     sensors.altitude_m   = bmp.readAltitude(1013.25f);
   }

@@ -1,0 +1,21 @@
+services:
+  hexair:
+    build: .
+    container_name: hexair
+    restart: unless-stopped
+    env_file: .env
+    # The existing mariadb container runs on Docker's default bridge, which has
+    # no container-name DNS. Rather than re-networking a container Home
+    # Assistant depends on, reach MariaDB through its already-published port on
+    # the host gateway.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      # 0.0.0.0 so the phone reaches it on the LAN (192.168.2.54:9101) and over
+      # Tailscale (100.90.171.26:9101).
+      - "9101:9101"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
