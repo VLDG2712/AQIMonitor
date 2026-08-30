@@ -7,6 +7,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from . import api, collector, db
+from . import mqtt as mqtt_mod
 from .config import config
 
 logging.basicConfig(
@@ -28,6 +29,12 @@ async def lifespan(app: FastAPI):
     except Exception as e:  # noqa: BLE001 - startup must survive a cold DB
         log.warning("schema not ready at startup (will retry): %s", e)
 
+    if config.mqtt_enabled:
+        mqtt_mod.bridge = mqtt_mod.MqttBridge(asyncio.get_running_loop())
+        mqtt_mod.bridge.start()
+    else:
+        log.info("MQTT disabled (set HEXAIR_MQTT_ENABLED=true to enable)")
+
     task = asyncio.create_task(collector.run(), name="collector")
     try:
         yield
@@ -36,6 +43,8 @@ async def lifespan(app: FastAPI):
         task.cancel()
         with contextlib.suppress(asyncio.CancelledError):
             await task
+        if mqtt_mod.bridge is not None:
+            mqtt_mod.bridge.stop()
         db.close()
 
 

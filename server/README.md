@@ -91,6 +91,62 @@ Unauthenticated. Reports database reachability and collector freshness
 (`device_ok` goes false after roughly three missed polls). Suitable as an
 Uptime Kuma target.
 
+## Home Assistant (MQTT)
+
+Set `HEXAIR_MQTT_ENABLED=true` and the service publishes MQTT discovery
+configs, so a **Hexair** device appears in Home Assistant with 13 entities and
+no YAML.
+
+Mosquitto runs on the Pi host rather than in Docker, so the service reaches it
+through `host.docker.internal` (the same host-gateway mapping used for
+MariaDB). Home Assistant itself runs with `network=host`, so *its* broker
+address is plain `localhost`.
+
+The broker requires authentication (`password_file`, no `allow_anonymous`).
+Two dedicated accounts are used rather than sharing one: `hexair` for this
+service and `homeassistant` for HA. Both are created by root-only helper
+scripts that read their password from a mode-600 file, so no secret is ever
+typed or echoed:
+
+```bash
+sudo bash /home/dietpi/hexair/mqtt_user.sh      # creates 'hexair'
+sudo bash /home/dietpi/hexair/ha_mqtt_user.sh   # creates 'homeassistant'
+```
+
+### Topics
+
+| Topic | Purpose |
+|---|---|
+| `hexair/<id>/state` | All sensor values, one JSON blob per poll |
+| `hexair/<id>/availability` | `online`/`offline`, with an MQTT last-will |
+| `hexair/<id>/ring/state` | Current NeoPixel state (retained) |
+| `hexair/<id>/ring/set` | Light commands from HA |
+
+**All 13 entities share one state topic.** The service publishes a single JSON
+document per poll and each entity pulls its own field with a `value_template`
+— one message every 30s instead of thirteen.
+
+Discovery configs are published **retained**, so HA picks them up the moment it
+subscribes rather than waiting for the next reading. The availability topic
+carries a **last will**, so if this service dies HA marks the entities
+unavailable instead of showing stale values forever.
+
+### The light entity
+
+The ring is exposed as a JSON-schema light with brightness, RGB, and all nine
+firmware effects. `EFFECTS` in `app/mqtt.py` is ordered to match the firmware's
+`FX_*` constants **by index** — reordering that list silently remaps effects.
+
+Setting colour or effect from HA also forces `manual: true`. Those settings
+only take hold when the firmware isn't running its sensor-driven animation;
+without it, an automation would set a colour and have the AQI breathing effect
+immediately overwrite it.
+
+`/neo` is re-read on every poll, so changes made from the Flutter app or the
+device's own web UI are reflected back into HA. Note `/neo` is
+auth-protected (unlike `/air`), so `HEXAIR_DEVICE_TOKEN` must be set for light
+control to work — update it whenever the ESP32 token is rotated.
+
 ## Storage
 
 ~2,880 rows/day, ~1.05M/year, roughly **100 MB/year** including indexes.

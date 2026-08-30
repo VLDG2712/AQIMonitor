@@ -91,9 +91,15 @@ async def health() -> Dict[str, Any]:
         db_ok = False
         db_error = f"{type(e).__name__}: {e}"
 
+    from . import mqtt as mqtt_mod
+    mqtt_status = {"enabled": config.mqtt_enabled}
+    if mqtt_mod.bridge is not None:
+        mqtt_status["connected"] = mqtt_mod.bridge.connected
+
     return {
         "status": "ok" if db_ok else "degraded",
         "database": {"ok": db_ok, "error": db_error},
+        "mqtt": mqtt_status,
         "collector": {
             "device_ok": device_ok,
             "last_success_ms": last,

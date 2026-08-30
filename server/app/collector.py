@@ -89,7 +89,14 @@ async def poll_once(client: httpx.AsyncClient) -> None:
     # /air carries no timestamp of its own, so the collector stamps the row at
     # receipt time.
     ts_ms = int(time.time() * 1000)
-    await db.insert_reading(config.device_id, ts_ms, map_payload(payload))
+    values = map_payload(payload)
+    await db.insert_reading(config.device_id, ts_ms, values)
+
+    # Feed Home Assistant from the same poll rather than adding a second one.
+    from . import mqtt as mqtt_mod
+    if mqtt_mod.bridge is not None:
+        mqtt_mod.bridge.publish_state({**values, "ts_ms": ts_ms})
+        await mqtt_mod.bridge.refresh_light_state()
 
     state.last_success_ms = ts_ms
     state.last_error = None
