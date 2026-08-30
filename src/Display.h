@@ -1,13 +1,14 @@
-// Display.h — TFT rendering and value-to-colour mapping.
+// Display.h — AQI text labels.
+//
+// The TFT drawing that used to live here was replaced by the LVGL interface in
+// Ui.cpp. Only the label mapping survives, because it is shared: both the UI
+// and the /air JSON handler report the same wording.
 #pragma once
 
 #include <Arduino.h>
 
-uint16_t    aqiColor(uint8_t aqi);
-// Also used by the /air handler, not just the TFT.
+/// Human-readable band for an ENS160 AQI value (1-5); "Warmup" while unready.
+///
+/// Padded to a fixed width — the /air response and the old fixed-cell TFT
+/// layout both relied on that, and the JSON field is trimmed by clients.
 const char* aqiLabel(uint8_t aqi);
-uint16_t    co2Color(uint16_t co2);
-uint16_t    pmColor(uint16_t pm25);
-
-void drawStaticLayout();
-void updateDisplay();
