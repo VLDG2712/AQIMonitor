@@ -16,8 +16,8 @@
 const char*    DEFAULT_SSID             = SECRET_WIFI_SSID;
 const char*    DEFAULT_PASSWORD         = SECRET_WIFI_PASSWORD;
 const uint16_t DEFAULT_SERVER_PORT      = 9091;
-const float    DEFAULT_TEMP_OFFSET      = -5.7f;
-const float    DEFAULT_HUM_OFFSET       = +8.0f;
+const float    DEFAULT_TEMP_OFFSET      = -4.9f;
+const float    DEFAULT_HUM_OFFSET       = +12.0f;
 const uint32_t DEFAULT_WARMUP_MS        = 120000;
 const uint32_t DEFAULT_SENSOR_INTERVAL  = 2000;
 const uint8_t  DEFAULT_NEO_BRIGHTNESS   = 175;
@@ -1350,6 +1350,25 @@ void setup() {
   neo.clear();
   neo.show();
 
+  // Startup self-test: drives the ring directly, before any task exists.
+  // If this shows colour but the ring is dark in normal operation, the wiring
+  // is fine and the fault is in the animation task. If it stays dark, the
+  // problem is electrical (data pin, power, or a dead first pixel).
+  Serial.println("NEO: self-test start");
+  neo.setBrightness(60);
+  const uint32_t selfTest[3] = {
+    neo.Color(255, 0, 0), neo.Color(0, 255, 0), neo.Color(0, 0, 255)
+  };
+  for (uint8_t c = 0; c < 3; c++) {
+    neo.fill(selfTest[c]);
+    neo.show();
+    delay(350);
+  }
+  neo.clear();
+  neo.show();
+  neo.setBrightness(cfg.neo_brightness);
+  Serial.println("NEO: self-test done");
+
   // TFT
   tft.init();
   pinMode(PIN_TFT_BL, OUTPUT);
@@ -1467,18 +1486,27 @@ void setup() {
   delay(1500);
 
   cfgMutex = xSemaphoreCreateMutex();
-  xTaskCreatePinnedToCore(
+  if (cfgMutex == nullptr) Serial.println("FATAL: cfgMutex alloc failed");
+
+  Serial.printf("Free heap before tasks: %u bytes\n", ESP.getFreeHeap());
+
+  // 2048 was tight for a task doing float maths and calling into
+  // Adafruit_NeoPixel, which allocates for the ESP32 RMT backend.
+  BaseType_t neoOk = xTaskCreatePinnedToCore(
     neoTaskFn,
     "NeoPixel",
-    2048,
+    4096,
     NULL,
     2,
     &neoTaskHandle,
-    1               
+    1
   );
+  // Previously unchecked: a failure here leaves the ring permanently dark
+  // while every other subsystem works normally, which is very hard to
+  // diagnose from the outside.
+  Serial.printf("NEO task create: %s\n", neoOk == pdPASS ? "OK" : "FAILED");
 
-  
-  xTaskCreatePinnedToCore(
+  BaseType_t webOk = xTaskCreatePinnedToCore(
     webTaskFn,
     "WebServer",
     4096,
@@ -1487,6 +1515,7 @@ void setup() {
     &webTaskHandle,
     0
   );
+  Serial.printf("WEB task create: %s\n", webOk == pdPASS ? "OK" : "FAILED");
 
   drawStaticLayout();
 }
