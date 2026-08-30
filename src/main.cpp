@@ -10,6 +10,7 @@
 #include "Config.h"
 #include "Constants.h"
 #include "Display.h"
+#include "Ui.h"
 #include "Globals.h"
 #include "NeoPixel.h"
 #include "Network.h"
@@ -206,7 +207,7 @@ void setup() {
   );
   Serial.printf("WEB task create: %s\n", webOk == pdPASS ? "OK" : "FAILED");
 
-  drawStaticLayout();
+  uiInit();
 }
 
 // Loop 
@@ -215,6 +216,7 @@ void loop() {
   esp_task_wdt_reset();
   updateLed();
   wifiCheck();
+  uiTick();
 
   static uint32_t lastRead = 0;
   uint32_t now = millis();
@@ -222,7 +224,7 @@ void loop() {
   if (now - lastRead >= cfg.sensor_interval) {
     lastRead = now;
     readSensors();
-    updateDisplay();
+    uiUpdate();
     Serial.printf(
       "[%lus] T:%.1fC H:%.1f%% CO2:%d TVOC:%d AQI:%d "
       "P:%.1fhPa ALT:%.0fm PM2.5:%d CPU:%.0fC WiFi:%s NEO:%s\n",
