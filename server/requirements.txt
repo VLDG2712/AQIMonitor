@@ -1,5 +1,5 @@
-fastapi==0.115.6
-uvicorn[standard]==0.34.0
-PyMySQL==1.1.1
+fastapi==0.141.1
+uvicorn[standard]==0.52.4
+PyMySQL==1.2.0
 httpx==0.28.1
 paho-mqtt==2.1.0
