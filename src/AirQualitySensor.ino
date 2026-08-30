@@ -202,7 +202,7 @@ void loadConfig() {
     Serial.println("No config.json — using defaults");
     return;
   }
-  fs:File f = LittleFS.open("/config.json", "r");
+  File f = LittleFS.open("/config.json", "r");
   if (!f) return;
 
   JsonDocument doc;
@@ -238,7 +238,7 @@ void loadConfig() {
 }
 
 void saveConfig() {
-  fs:File f = LittleFS.open("/config.json", "w");
+  File f = LittleFS.open("/config.json", "w");
   if (!f) { Serial.println("Failed to write config.json"); return; }
 
   JsonDocument doc;
